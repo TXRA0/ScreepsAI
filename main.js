@@ -77,6 +77,31 @@ const source_builders = 0;
 const source_repairers = 0;
 const source_defenders = 0;
 
+const pairedMessages = [
+  ["hi!", "yo"],
+  ["back off", "wanna fight"],
+  ["sup?", "not bad"],
+  ["lol", "same"],
+  ["you good?", "yeah"],
+  ["follow me", "ok"],
+  ["zzz...", "wake up"],
+  ["hey!", "hi!"],
+  ["yo!", "hey!"],
+  ["got time?", "sure"],
+  ["brb", "ok"],
+  ["go!", "let's!"],
+  ["slow down", "hurry!"],
+  ["gg", "wp"],
+  ["nope", "yep"],
+  ["wait", "now!"],
+  ["bye", "see ya"],
+  ["why?", "idk"],
+  ["lol", "xd"],
+  ["ok", "ok!"],
+];
+
+
+
 module.exports.loop = function () {
 if(!Memory.rooms) {
     Memory.rooms = {}
@@ -92,7 +117,27 @@ for (const roomName in Game.rooms) {
         Memory.rooms[roomName] = {};
         }
     }
-    
+  const creeps = Object.values(Game.creeps);
+  const paired = new Set();
+
+  for (let i = 0; i < creeps.length; i++) {
+    const creepA = creeps[i];
+    if (paired.has(creepA.name) || Math.random() > 0.6 || creepA.saying) continue;
+
+    for (let j = i + 1; j < creeps.length; j++) {
+      const creepB = creeps[j];
+      if (paired.has(creepB.name) || creepB.saying) continue;
+
+      if (creepA.pos.inRangeTo(creepB.pos, 2)) {
+        const [msgA, msgB] = pairedMessages[Math.floor(Math.random() * pairedMessages.length)];
+        creepA.say(msgA,true);
+        creepB.say(msgB, true);
+        paired.add(creepA.name);
+        paired.add(creepB.name);
+        break;
+      }
+    }
+  }
 
     
     
@@ -513,6 +558,7 @@ function drawRoomVisual(room) {
         print(`🚨 Hostiles: ${hostileCreeps.length}`, line++, '#ff5555');
     }
 }
+
 
 
 
