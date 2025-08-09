@@ -6,10 +6,9 @@ Basic AI for the game **Screeps: World**
 Should work on any given room, although only tested by myself.
 
 ---
+### Currentt Version - 0.70: Links and Multi-Rooming 
 
-### Current Version - 0.67: RCL-5 and Trio Attacks
-
-### Next Version - 0.70: Links and Multi-Rooming (yay!)
+### Next Version - 0.80: Some like to watch the world burn (advanced attackers, attackers working together, specialised roles, more advanced attacks and potentially start of duos/quads, aimed at removing NCP's from my novice area)
 
 ---
 
