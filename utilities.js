@@ -240,14 +240,14 @@ deliverEnergy(creep) {
       const nearbyLink = creep.pos.findInRange(FIND_STRUCTURES, 1, {
         filter: s => s.structureType === STRUCTURE_LINK && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
       });
-
+      /*
       if (nearbyLink) {
         creep.transfer(nearbyLink, RESOURCE_ENERGY);
         creep.say("🔗", true);
-      } else {
+      } else 
+      */
         creep.drop(RESOURCE_ENERGY);
         creep.say("⛏️", true);
-      }
     }
   }
 }
