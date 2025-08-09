@@ -2,21 +2,31 @@
 
 ## Screeps AI
 
-Basic AI for the game **Screeps: World**  
-Should work on any given room, although only tested by myself.
+Basic AI for the game [**Screeps: World**](https://screeps.com/)  
+Designed to work in any room, though currently only tested by myself.
+My profile is here: [**Profile**](https://screeps.com/a/#!/profile/_TXR)
 
 ---
-### Currentt Version - 0.70: Links and Multi-Rooming 
 
-### Next Version - 0.80: Some like to watch the world burn (advanced attackers, attackers working together, specialised roles, more advanced attacks and potentially start of duos/quads, aimed at removing NCP's from my novice area)
+### Current Version - 0.70:  
+- Added support for Links and multi-room management
+- Added basic creep chatter
+
+### Next Version - 0.80:  
+- Introducing advanced attackers with coordinated team behaviors  
+- Specialized attacker roles for smarter combat  
+- Advanced attack strategies, including duo and quad squads  
+- Goal: Remove NPCs from my novice area
 
 ---
 
 ## Roadmap - Future Features
 
-- Build a roomManager for dynamic creep selection/desire vs. current creep spawn requests  
-- Refactor `utilities` module for smarter and more advanced logic  
-- Add a spawn queue and generate more dynamic creep bodies  
-- Store expensive calls in room memory (although 11 creeps and 1 room only use 4 CPU!)  
-- Improve tower behavior and overall defense  
-- Add logic for links, market trading, and possibly basic lab logic in the future  
+- Develop a room manager for dynamic creep selection and spawn request management  
+- Refactor the `utilities` module for smarter, more advanced logic  
+- Implement a spawn queue with dynamic creep body generation  
+- Cache expensive calls in room memory (currently 11 creeps in 1 room use only 4 CPU!)  
+- Enhance tower behavior and overall defense mechanisms  
+- Add logic for Links, market trading, and basic lab automation  
+
+---
