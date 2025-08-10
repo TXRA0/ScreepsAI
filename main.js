@@ -309,7 +309,7 @@ if (1 < 0) {
     if (total_rangers.length < spawn_ranger) {
         const newName = `Ranger${Game.time}`;
         console.log(`Spawning new ranger: ${newName}`);
-       // spawner.buildCreep('ranger', room);
+        spawner.buildCreep('ranger', room);
     } else if (total_healers.length < spawn_healer) {
         const newName = `Healer${Game.time}`;
         console.log(`Spawning new healer: ${newName}`);

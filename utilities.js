@@ -93,7 +93,6 @@ pickupEnergy(creep) {
     const restFlag = Game.flags["Rest1"];
     if (restFlag) {
         creep.moveTo(restFlag);
-        creep.say("😴");
     }
 }
 //upgraders - pickup from upgrade container
@@ -102,7 +101,9 @@ pickupEnergyUpgrade(creep) {
   const currentCarry = creep.store[RESOURCE_ENERGY] || 0;
   const energyNeeded = carryCapacity - currentCarry;
 
-  if (energyNeeded <= 0) return;
+  if (energyNeeded <= 0) {
+    return;
+  }
 
   const containers = creep.room.find(FIND_STRUCTURES, {
     filter: s =>
@@ -111,9 +112,11 @@ pickupEnergyUpgrade(creep) {
   });
 
   if (containers.length > 0) {
-    const container = creep.pos.findClosestByRange(containers);
-    if (creep.withdraw(container, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
-      creep.moveTo(container);
+    const container = creep.pos.findClosestByPath(containers);
+    if (container) {
+      if (creep.withdraw(container, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+        creep.moveTo(container, { visualizePathStyle: { stroke: '#ffaa00' } });
+      }
     }
     return;
   }
@@ -125,9 +128,11 @@ pickupEnergyUpgrade(creep) {
   });
 
   if (storage.length > 0) {
-    const closestStorage = creep.pos.findClosestByRange(storage);
-    if (creep.withdraw(closestStorage, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
-      creep.moveTo(closestStorage);
+    const closestStorage = creep.pos.findClosestByPath(storage);
+    if (closestStorage) {
+      if (creep.withdraw(closestStorage, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+        creep.moveTo(closestStorage, { visualizePathStyle: { stroke: '#00aaff' } });
+      }
     }
     return;
   }
@@ -137,9 +142,11 @@ pickupEnergyUpgrade(creep) {
   );
 
   if (dropped.length > 0) {
-    const closest = creep.pos.findClosestByRange(dropped);
-    if (creep.pickup(closest) === ERR_NOT_IN_RANGE) {
-      creep.moveTo(closest);
+    const closest = creep.pos.findClosestByPath(dropped);
+    if (closest) {
+      if (creep.pickup(closest) === ERR_NOT_IN_RANGE) {
+        creep.moveTo(closest, { visualizePathStyle: { stroke: '#ffaa00' } });
+      }
     }
     return;
   }
@@ -147,9 +154,10 @@ pickupEnergyUpgrade(creep) {
   const restFlag = Game.flags["Rest1"];
   if (restFlag) {
     creep.moveTo(restFlag);
-    creep.say("😴");
   }
 }
+
+
 
  
 
@@ -243,18 +251,15 @@ deliverEnergy(creep) {
       /*
       if (nearbyLink) {
         creep.transfer(nearbyLink, RESOURCE_ENERGY);
-        creep.say("🔗", true);
       } else 
       */
         creep.drop(RESOURCE_ENERGY);
-        creep.say("⛏️", true);
     }
   }
 }
 
 
    upgrade(creep) {
-    creep.say("upgrade", true);
 
     const sites = creep.room.find(FIND_CONSTRUCTION_SITES);
     if (!creep.room.controller) return;
@@ -302,27 +307,8 @@ repair(creep) {
 
     const threshold = roomMemory.wallRepairThreshold;
 
-    if (!creep.memory.mode) creep.memory.mode = 'walls';
-        if (creep.memory.mode === 'walls') {
-        const walls = creep.room.find(FIND_STRUCTURES, {
-            filter: s =>
-                (s.structureType === STRUCTURE_WALL || s.structureType === STRUCTURE_RAMPART) &&
-                s.hits < threshold
-        });
-
-        if (walls.length > 0) {
-            walls.sort((a, b) => a.hits - b.hits);
-            if (creep.repair(walls[0]) === ERR_NOT_IN_RANGE) {
-                creep.moveTo(walls[0]);
-            }
-            creep.say('🧱 Fortify', true);
-        } else {
-            roomMemory.wallRepairThreshold += 10000;
-            creep.say(`⬆️ ${roomMemory.wallRepairThreshold}`);
-            creep.memory.mode = 'repair'; 
-        }
-
-        return;
+    if (!creep.memory.mode) {
+        creep.memory.mode = 'repair';
     }
 
     if (creep.memory.mode === 'repair') {
@@ -338,22 +324,41 @@ repair(creep) {
             if (creep.repair(targets[0]) === ERR_NOT_IN_RANGE) {
                 creep.moveTo(targets[0]);
             }
-            creep.say('🔧 Repair', true);
         } else {
             creep.memory.mode = 'walls';
         }
+
         return;
     }
 
+    if (creep.memory.mode === 'walls') {
+        const walls = creep.room.find(FIND_STRUCTURES, {
+            filter: s =>
+                (s.structureType === STRUCTURE_WALL || s.structureType === STRUCTURE_RAMPART) &&
+                s.hits < threshold
+        });
 
-    if (!creep.memory.mode || (!targets && !walls)) {
-        const flag = Game.flags["Rest1"];
-        if (flag) {
-            creep.moveTo(flag.pos);
-            creep.say('💤');
+        if (walls.length > 0) {
+            walls.sort((a, b) => a.hits - b.hits);
+            if (creep.repair(walls[0]) === ERR_NOT_IN_RANGE) {
+                creep.moveTo(walls[0]);
+            }
+        } else {
+            roomMemory.wallRepairThreshold += 10000;
+            creep.say(`⬆️ ${roomMemory.wallRepairThreshold}`);
+            creep.memory.mode = 'repair';
         }
+
+        return;
+    }
+
+    const flag = Game.flags["Rest1"];
+    if (flag) {
+        creep.moveTo(flag.pos);
+        creep.say('💤');
     }
 }
+
 
 defend(creep) {
     const hostiles = creep.room.find(FIND_HOSTILE_CREEPS);
@@ -375,34 +380,32 @@ defend(creep) {
 }
 ranger(creep) {
   const flag = Game.flags.trio;
-
   if (!flag) {
     creep.say("huh");
     return;
   }
 
-//if (creep.pos.roomName !== flag.pos.roomName || creep.pos.getRangeTo(flag) > 1) {
   if (creep.pos.roomName !== flag.pos.roomName) {
-  creep.moveTo(flag, {
-    visualizePathStyle: { stroke: '#ffaa00' },
-    reusePath: 50,
-    maxOps: 5000,
-    maxRooms: 16
-  });
-  creep.say("move in!", true);
-  return;
-}
+    creep.moveTo(flag, {
+      visualizePathStyle: { stroke: '#ffaa00' },
+      reusePath: 50,
+      maxOps: 5000,
+      maxRooms: 16
+    });
+    creep.rangedMassAttack();
+    creep.say("move in!", true);
+    return;
+  }
 
   const enemyCreeps = creep.room.find(FIND_HOSTILE_CREEPS);
   const enemyStructures = creep.room.find(FIND_HOSTILE_STRUCTURES, {
-    filter: struct => struct.structureType !== STRUCTURE_CONTROLLER
-});
+    filter: s => s.structureType !== STRUCTURE_CONTROLLER
+  });
   const enemies = enemyCreeps.concat(enemyStructures);
-
   if (enemies.length === 0) return;
 
-  const dangerousEnemies = enemyCreeps.filter(enemy =>
-    enemy.getActiveBodyparts(ATTACK) > 0 || enemy.getActiveBodyparts(RANGED_ATTACK) > 0
+  const dangerousEnemies = enemyCreeps.filter(e =>
+    e.getActiveBodyparts(ATTACK) > 0 || e.getActiveBodyparts(RANGED_ATTACK) > 0
   );
 
   const hasAttack = creep.getActiveBodyparts(ATTACK) > 0;
@@ -411,51 +414,90 @@ ranger(creep) {
 
   if (dangerousEnemies.length > 0) {
     const closestDanger = creep.pos.findClosestByRange(dangerousEnemies);
-    creep.rangedAttack(closestDanger)
     const dist = creep.pos.getRangeTo(closestDanger);
 
     if (dist <= 3) {
       const fleePos = this.getFleePath(creep, closestDanger.pos, 3);
       if (fleePos.length > 0) {
         creep.moveTo(fleePos[0], { visualizePathStyle: { stroke: '#ff0000' } });
-        creep.say("parry",true)
-        creep.rangedAttack(closestDanger)
+        creep.say("parry", true);
+        creep.rangedAttack(closestDanger);
       } else {
-        creep.moveTo(creep.pos.x + (creep.pos.x - closestDanger.pos.x), creep.pos.y + (creep.pos.y - closestDanger.pos.y));
-        creep.say("move in!",true)
+        // fallback flee
+        const dx = creep.pos.x - closestDanger.pos.x;
+        const dy = creep.pos.y - closestDanger.pos.y;
+        const fallbackPos = new RoomPosition(
+          creep.pos.x + dx,
+          creep.pos.y + dy,
+          creep.room.name
+        );
+        creep.moveTo(fallbackPos);
+        creep.say("fallback!", true);
       }
       return;
     }
   }
 
-if (hasRanged && target.structureType) {
-  if (creep.pos.inRangeTo(target, 1)) {
-    creep.rangedAttack(target);
-    creep.say("pew!", true);
-  } else {
-    creep.moveTo(target, {
-      range: 1,
-      visualizePathStyle: { stroke: '#ff8800' }
-    });
-    creep.say("move in!", true);
-  }
-}else if (hasAttack) {
+  if (hasRanged && target.structureType) {
+    if (creep.pos.inRangeTo(target, 1)) {
+      //creep.rangedMassAttack();
+      creep.rangedAttack(target)
+      creep.say("pew!", true);
+    } else {
+      creep.moveTo(target, {
+        range: 1,
+        visualizePathStyle: { stroke: '#ff8800' }
+      });
+      creep.say("move in!", true);
+    }
+  } else if (hasAttack) {
     if (creep.pos.isNearTo(target)) {
       creep.attack(target);
     } else {
       creep.moveTo(target, { visualizePathStyle: { stroke: '#0000ff' } });
-      creep.say("move in!",true)
+      creep.say("move in!", true);
     }
   } else {
-    creep.moveTo(flag);
+    if(creep.signController(creep.room.controller, "lol get cooked") == ERR_NOT_IN_RANGE) {
+        creep.moveTo(creep.room.controller)
+    }
   }
 }
+
 getFleePath(creep, enemyPos, desiredRange) {
-  const positions = creep.room.getPositionsInRange(creep.pos, desiredRange);
-  const fleePos = positions.filter(pos => pos.isWalkable && pos.getRangeTo(enemyPos) >= desiredRange);
-  fleePos.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
-  return fleePos;
+  const positions = [];
+
+  for (let dx = -desiredRange; dx <= desiredRange; dx++) {
+    for (let dy = -desiredRange; dy <= desiredRange; dy++) {
+      const x = creep.pos.x + dx;
+      const y = creep.pos.y + dy;
+      if (x < 0 || x > 49 || y < 0 || y > 49) continue;
+
+      const pos = new RoomPosition(x, y, creep.room.name);
+      if (pos.getRangeTo(enemyPos) >= desiredRange && this.isPositionWalkable(pos)) {
+        positions.push(pos);
+      }
+    }
+  }
+
+  positions.sort((a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b));
+  return positions;
 }
+
+isPositionWalkable(pos) {
+  const terrain = Game.map.getRoomTerrain(pos.roomName);
+  if (terrain.get(pos.x, pos.y) === TERRAIN_MASK_WALL) return false;
+
+  const structures = pos.lookFor(LOOK_STRUCTURES);
+  if (structures.some(s => OBSTACLE_OBJECT_TYPES.includes(s.structureType))) return false;
+
+  const creeps = pos.lookFor(LOOK_CREEPS);
+  if (creeps.length > 0) return false;
+
+  return true;
+}
+
+
 
 healer(creep) {
   const flag = Game.flags.trio;
