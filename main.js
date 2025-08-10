@@ -8,6 +8,8 @@ const roleRanger = require("role.ranger");
 const roleHealer = require("role.healer");
 const roleBeserker = require("role.beserker");
 const roleFiller = require("role.filler");
+const roleClaimer = require("role.claimer")
+const rolePioneer = require("role.pioneer")
 const utils = require("./utilities");
 const spawner = require("./functions.spawner");
 const toolbox = new utils();
@@ -78,26 +80,26 @@ const source_repairers = 0;
 const source_defenders = 0;
 
 const pairedMessages = [
-  ["hi!", "yo"],
-  ["back off", "wanna fight"],
-  ["sup?", "not bad"],
+  ["hey", "yo"],
+  ["back off", "try me"],
+  ["sup?", "chillin"],
   ["lol", "same"],
   ["you good?", "yeah"],
-  ["follow me", "ok"],
+  ["follow me", "on it"],
   ["zzz...", "wake up"],
   ["hey!", "hi!"],
   ["yo!", "hey!"],
   ["got time?", "sure"],
   ["brb", "ok"],
-  ["go!", "let's!"],
-  ["slow down", "hurry!"],
+  ["go!", "let's go"],
+  ["slow down", "move up"],
   ["gg", "wp"],
   ["nope", "yep"],
-  ["wait", "now!"],
+  ["wait", "now"],
   ["bye", "see ya"],
   ["why?", "idk"],
-  ["lol", "xd"],
-  ["ok", "ok!"],
+  ["lol vro 😂", "xd"],
+  ["ok", "👍"],
 ];
 
 
@@ -236,6 +238,20 @@ const total_filler = _.filter(
     creep.memory.origin &&
     creep.memory.origin.name === room.name
 );
+const total_claimer = _.filter(
+  Game.creeps,
+  (creep) =>
+    creep.memory.role === "claimer" &&
+    creep.memory.origin &&
+    creep.memory.origin.name === room.name
+);
+const total_pioneer = _.filter(
+  Game.creeps,
+  (creep) =>
+    creep.memory.role === "pioneer" &&
+    creep.memory.origin &&
+    creep.memory.origin.name === room.name
+);
 
 
   // ╔═════════╗
@@ -320,7 +336,16 @@ if (1 < 0) {
         spawner.buildCreep('beserker', room);
     }
 }
-
+if(Game.flags.claimRoom) {
+    if(total_claimers.length < 1) {
+        spawner.buildCreep('claimer', room);
+    }
+}
+if(Game.flags.supportRoom) {
+    if(total_pioneers.length < 3) {
+        spawner.buildCreep('pioneer', room)
+    }
+}
     
 var defconLevel = Number(
     Memory.defcon &&
@@ -462,7 +487,7 @@ towers.forEach(tower => {
        	roleAttacker.run(creep);
        	break;
        case 'claimer':
-       	roleClaimer.run(creep);
+       	roleClaimer.run(creep, true, toolbox);
        	break;
        case 'filler':
        	roleFiller.run(creep, activated_fillers, toolbox);

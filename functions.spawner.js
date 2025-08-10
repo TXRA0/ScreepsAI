@@ -88,6 +88,8 @@ if (spawn) {
     healer: [MOVE, HEAL],
     beserker: [ATTACK, MOVE],
     filler: [CARRY, CARRY, MOVE, MOVE],
+    claimer: [MOVE, CLAIM],
+    pioneer: [WORK, WORK, CARRY, MOVE, MOVE, MOVE],
   },
 
   caps: {
@@ -101,5 +103,7 @@ if (spawn) {
     healer: 900,
     beserker: 650,
     filler: 1500,
+    claimer: 650,
+    pioneer: 1200,
   }
 }

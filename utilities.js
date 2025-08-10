@@ -660,6 +660,29 @@ filler(creep) {
     creep.say("sleep", true);
   }
 }
+claim(creep) {
+  var flag = Game.flags.claimRoom
+  if(!flag) {
+    creep.say("huh")
+    return;
+  }
+  if (creep.pos.roomName !== flag.pos.roomName) {
+    creep.moveTo(flag, {
+      visualizePathStyle: { stroke: '#ffaa00' },
+      reusePath: 50,
+      maxOps: 5000,
+      maxRooms: 16
+    });
+    return;
+  }
+  if(creep && creep.room && creep.room.controller) {
+    if(creep.claimController(creep.room.controller) == ERR_NOT_IN_RANGE) {
+      creep.moveTo(creep.room.controller)
+    } else {
+      creep.signController(creep.room.controller, `${creep.room.name} is property of _TXR`);
+    }
+  }
+}
 
 
 }
