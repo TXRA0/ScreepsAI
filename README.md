@@ -8,15 +8,17 @@ My profile is here: [**TXR**](https://screeps.com/a/#!/profile/_TXR)
 
 ---
 
-### Current Version - 0.70:  
-- Added support for Links and multi-room management
-- Added basic creep chatter
+### Current Version - 0.75:  
+- Improved creep chatter
+- Added pioneer role - goes to newly claimed rooms and builds there
+- Added claimer role - 
 
 ### Next Version - 0.80:  
-- Introducing advanced attackers with coordinated team behaviors  
-- Specialized attacker roles for smarter combat  
-- Advanced attack strategies, including duo and quad squads  
-- Goal: Remove NPCs from my novice area
+- Introducing multi-rooming and room support
+- Building up on already robust code
+- Better repairers (maybe a centralised repair manager)
+- potentially lab and market management (capatalism)
+
 
 ---
 
