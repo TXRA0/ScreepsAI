@@ -10,10 +10,10 @@ const roleBeserker = require("role.beserker");
 const roleFiller = require("role.filler");
 const roleClaimer = require("role.claimer")
 const rolePioneer = require("role.pioneer")
-const utils = require("./utilities");
+const toolbox = require("./utilities");
 const spawner = require("./functions.spawner");
-const toolbox = new utils();
 const defcon = require("./defcon");
+const hash = require('hash'); //latest addition
 //╔══════════════════╗
 //║ Global Variables ║
 //╚══════════════════╝
@@ -78,6 +78,7 @@ const source_upgraders = 1;
 const source_builders = 0;
 const source_repairers = 0;
 const source_defenders = 0;
+const source_pioneers = 0;
 
 const pairedMessages = [
   ["hey", "yo"],
@@ -105,6 +106,7 @@ const pairedMessages = [
 
 
 module.exports.loop = function () {
+    
 if(!Memory.rooms) {
     Memory.rooms = {}
 }
@@ -245,7 +247,7 @@ const total_claimer = _.filter(
     creep.memory.origin &&
     creep.memory.origin.name === room.name
 );
-const total_pioneer = _.filter(
+const total_pioneers = _.filter(
   Game.creeps,
   (creep) =>
     creep.memory.role === "pioneer" &&
@@ -457,6 +459,14 @@ towers.forEach(tower => {
           source_harvesters
         );
         break;
+      case 'pioneer':
+         rolePioneer.run(
+          creep,
+          true,
+          toolbox,
+          source_pioneers,
+        );
+         break
       case "hauler":
         roleHauler.run(
           creep,

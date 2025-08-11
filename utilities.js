@@ -1,4 +1,4 @@
-class utils {
+class Utils {
   miner(creep, sourceIndex) {
     const energySources = creep.room.find(FIND_SOURCES);
     if (creep.harvest(energySources[sourceIndex]) === ERR_NOT_IN_RANGE) {
@@ -360,6 +360,7 @@ repair(creep) {
 }
 
 
+
 defend(creep) {
     const hostiles = creep.room.find(FIND_HOSTILE_CREEPS);
     if (hostiles.length) {
@@ -689,4 +690,4 @@ claim(creep) {
 
 
 
-module.exports = utils;
+module.exports = new Utils();  //create and export an instance
