@@ -15,6 +15,7 @@ My profile is here: [**TXR**](https://screeps.com/a/#!/profile/_TXR)
 
 ### Next Version - 0.80:  
 - Introducing multi-rooming and room support
+- Caching for commonly used find() functions to save CPU
 - Building up on already robust code
 - Better repairers (maybe a centralised repair manager)
 - potentially lab and market management (capatalism)
