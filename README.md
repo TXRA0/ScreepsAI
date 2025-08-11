@@ -8,10 +8,12 @@ My profile is here: [**TXR**](https://screeps.com/a/#!/profile/_TXR)
 
 ---
 
-### Current Version - 0.75:  
+### Current Version - 0.78:  
 - Improved creep chatter
 - Added pioneer role - goes to newly claimed rooms and builds there
-- Added claimer role - 
+- Added claimer role - claims rooms
+- Added a basic hash function for caching data
+- Minor code tweaks
 
 ### Next Version - 0.80:  
 - Introducing multi-rooming and room support
