@@ -8,19 +8,17 @@ My profile is here: [**TXR**](https://screeps.com/a/#!/profile/_TXR)
 
 ---
 
-### Current Version - 0.78:  
-- Improved creep chatter
-- Added pioneer role - goes to newly claimed rooms and builds there
-- Added claimer role - claims rooms
-- Added a basic hash function for caching data
-- Minor code tweaks
+### Current Version - 0.80:  
+- Room Memory usage to save CPU
+- Bashed my CPU from 10-12 to 7-9 (6 on a good day)
+- Changed some roles
 
-### Next Version - 0.80:  
-- Introducing multi-rooming and room support
-- Caching for commonly used find() functions to save CPU
-- Building up on already robust code
+
+  
+### Next Version - 0.90:  
 - Better repairers (maybe a centralised repair manager)
-- potentially lab and market management (capatalism)
+- Better defcon system (its terrible)
+- Lab and market auto managing (for boost and credit making)
 
 
 ---
@@ -30,8 +28,5 @@ My profile is here: [**TXR**](https://screeps.com/a/#!/profile/_TXR)
 - Develop a room manager for dynamic creep selection and spawn request management  
 - Refactor the `utilities` module for smarter, more advanced logic  
 - Implement a spawn queue with dynamic creep body generation  
-- Cache expensive calls in room memory (currently 11 creeps in 1 room use only 4 CPU!)  
 - Enhance tower behavior and overall defense mechanisms  
-- Add logic for Links, market trading, and basic lab automation  
-
 ---
