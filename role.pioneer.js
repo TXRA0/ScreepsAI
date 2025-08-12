@@ -7,7 +7,6 @@ var rolePioneer = {
   }
   if (creep.pos.roomName !== flag.pos.roomName) {
     creep.moveTo(flag, {
-      visualizePathStyle: { stroke: '#ffaa00' },
       reusePath: 50,
       maxOps: 5000,
       maxRooms: 16

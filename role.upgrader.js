@@ -12,6 +12,11 @@ var roleUpgrader = {
       }
 
       if (creep.memory.working) {
+     //     if(!creep.room.controller.sign) {
+     //   if(creep.signController(creep.room.controller, "Erase scum who copy code off github and kill new players.") == ERR_NOT_IN_RANGE) {
+     //       creep.moveTo(creep.room.controller)
+    //    }
+    //      }
         toolbox.upgrade(creep, source)
       } else {
         // MINE
@@ -21,7 +26,6 @@ var roleUpgrader = {
       // REST
       creep.say("💤", true);
       creep.moveTo(Game.flags.Rest1.pos, {
-        visualizePathStyle: { stroke: "#00ffff" },
       });
     }
   },

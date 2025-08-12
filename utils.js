@@ -1,10 +1,8 @@
 module.exports = {
-  inflate: function(ids){
-    return _.transform(ids, function(result, id){
-      result.push(Game.getObjectById(id))
-    })
-  },
-
+inflate: function(ids) {
+  if (!Array.isArray(ids)) ids = [ids];
+  return ids.map(Game.getObjectById).filter(obj => obj);
+},
   deflate: function(objects){
     return _.transform(objects, function(result, object){
       result.push(object.id)
