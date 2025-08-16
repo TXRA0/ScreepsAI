@@ -20,8 +20,7 @@ createCreep: function(options) {
   if (canSpend > options.cap) {
     canSpend = options.cap;
   }
-
-  let creep = [...options.base]; // Clone base to avoid mutating it
+  let creep = [...options.base]; //clone
   let add = true;
 
   while (add) {
@@ -50,7 +49,7 @@ createCreep: function(options) {
   },
 buildCreep: function(action, room){
   if (!room) {
-    console.log("Error: room is undefined in buildCreep");
+    console.log("no room so sad :(");
     return;
   }
 
@@ -90,6 +89,8 @@ if (spawn) {
     filler: [CARRY, CARRY, MOVE, MOVE],
     claimer: [MOVE, CLAIM],
     pioneer: [WORK, WORK, CARRY, MOVE, MOVE, MOVE],
+    wallBuilder: [WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE],
+    mineralMiner: [WORK, WORK, CARRY, CARRY, MOVE, MOVE]
   },
 
   caps: {
@@ -105,5 +106,7 @@ if (spawn) {
     filler: 1500,
     claimer: 650,
     pioneer: 1200,
+    wallBuilder: 1000,
+    mineralMiner: 1200,
   }
 }

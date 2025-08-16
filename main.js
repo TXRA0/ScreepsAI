@@ -10,6 +10,9 @@ const roleBeserker = require("role.beserker");
 const roleFiller = require("role.filler");
 const roleClaimer = require("role.claimer")
 const rolePioneer = require("role.pioneer")
+const roleScout = require("role.scout");
+const roleWallBuilder = require("role.wallBuilder")
+const roleMineralMiner = require("role.mineralMiner")
 const toolbox = require("./utilities");
 const spawner = require("./functions.spawner");
 const defcon = require("./defcon");
@@ -36,11 +39,11 @@ const activated_healers = true;
 const activated_beserkers = true;
 
 const spawn_harvester = 2;
-const spawn_hauler = 3;
+const spawn_hauler = 2;
 const spawn_harvester_external = 0;
 const spawn_harvester_mineral = 0;
 const spawn_builder = 2;
-const spawn_upgrader = 2;
+const spawn_upgrader = 3;
 const spawn_repair = 1;
 const spawn_notifier = 0;
 const spawn_attacker = 0;
@@ -51,6 +54,7 @@ const spawn_filler = 0;
 const spawn_ranger = 1;
 const spawn_healer = 1;
 const spawn_beserker = 1;
+const spawn_wallBuilder = 1;
 
 // T = 1 roads, 2 plain, 10 swamp
 // MOVE not generate fatigue
@@ -81,28 +85,28 @@ const source_repairers = 0;
 const source_defenders = 0;
 const source_pioneers = 0;
 
-const pairedMessages = [
-  ["hey", "yo"],
-  ["back off", "try me"],
-  ["sup?", "chillin"],
-  ["lol", "same"],
-  ["you good?", "yeah"],
-  ["follow me", "on it"],
-  ["zzz...", "wake up"],
-  ["hey!", "hi!"],
-  ["yo!", "hey!"],
-  ["got time?", "sure"],
-  ["brb", "ok"],
-  ["go!", "let's go"],
-  ["slow down", "move up"],
-  ["gg", "wp"],
-  ["nope", "yep"],
-  ["wait", "now"],
-  ["bye", "see ya"],
-  ["why?", "idk"],
-  ["lol vro 😂", "xd"],
-  ["ok", "👍"],
-];
+let lastMemoryTick;
+let lastMemory;
+
+function tryInitSameMemory() {
+    const startCPU = Game.cpu.getUsed();
+    let reused = false;
+
+    if (lastMemoryTick && lastMemory && Game.time === lastMemoryTick + 1) {
+        delete global.Memory;
+        global.Memory = lastMemory;
+        RawMemory._parsed = lastMemory;
+        reused = true;
+    } else {
+        Memory;
+        lastMemory = RawMemory._parsed;
+    }
+
+    lastMemoryTick = Game.time;
+    const endCPU = Game.cpu.getUsed();
+
+    console.log(`[MemHack] CPU: ${(endCPU - startCPU).toFixed(3)} | Reused: ${reused}`);
+}
 
 function fnv1aHash(str) {
   let hash = 0x811c9dc5; 
@@ -136,6 +140,7 @@ function roomNeedsUpdate(room, prevHash) {
 
 
 module.exports.loop = function () {
+    tryInitSameMemory();
    // Profiler.loop()
     console.log(Game.cpu.bucket)
  //     if (Game.cpu.generatePixel && Game.cpu.bucket >= 10000) {
@@ -146,7 +151,6 @@ module.exports.loop = function () {
 if(!Memory.rooms) {
     Memory.rooms = {}
 }
-const startCPU = Game.cpu.getUsed();
 
 if (!Memory.rooms) Memory.rooms = {};
 
@@ -170,14 +174,37 @@ if (room && room.controller && room.controller.my) {
   }
 }
 
-const endCPU = Game.cpu.getUsed();
-console.log(`CPU used: ${endCPU - startCPU}`);
-
     for (const roomName in Game.rooms) {
         if(!Memory.rooms[roomName]) {
         Memory.rooms[roomName] = {};
         }
     }
+//if (Game.time % 10 === 0) {
+    require('marketManager').run();
+ //   console.log(`[marketManager] Tick ${Game.time}: run() triggered`);
+//}
+const pairedMessages = [
+  ["hey", "yo"],
+  ["back off", "try me"],
+  ["sup?", "chillin"],
+  ["lol", "same"],
+  ["you good?", "yeah"],
+  ["follow me", "on it"],
+  ["zzz...", "wake up"],
+  ["hey!", "hi!"],
+  ["yo!", "hey!"],
+  ["got time?", "sure"],
+  ["brb", "ok"],
+  ["go!", "let's go"],
+  ["slow down", "move up"],
+  ["gg", "wp"],
+  ["nope", "yep"],
+  ["wait", "now"],
+  ["bye", "see ya"],
+  ["why?", "idk"],
+  ["lol vro 😂", "xd"],
+  ["ok", "👍"],
+];
   const creeps = Object.values(Game.creeps);
   const paired = new Set();
 
@@ -214,74 +241,115 @@ console.log(`CPU used: ${endCPU - startCPU}`);
   // ╔═════════════════╗
   // ║ Role Assignment ║
   // ╚═════════════════╝
-  for (let name in Game.creeps) {
-    let creep = Game.creeps[name];
-    switch (creep.memory.role) {
-      case "harvester":
-        roleHarvester.run(
-          creep,
-          activated_harvesters,
-          toolbox,
-          source_harvesters
-        );
-        break;
-      case 'pioneer':
-         rolePioneer.run(
-          creep,
-          true,
-          toolbox,
-          source_pioneers,
-        );
-         break
-      case "hauler":
-        roleHauler.run(
-          creep,
-          activated_haulers,
-          toolbox,
-          source_haulers
-        );
-        break;
-       case 'harvester_external':
-       	roleHarvesterExternal.run(creep, activated_harvesters);
-       	break;
-       case 'harvester_mineral':
-       	roleHarvesterMineral.run(creep, activated_harvesters);
-       	break;
-      case "upgrader":
-        roleUpgrader.run(creep, activated_upgraders, toolbox, source_upgraders);
-        break;
-      case "builder":
-        roleBuilder.run(creep, activated_builders, toolbox, source_builders);
-        break;
-      case 'repairer':
-       	roleRepairer.run(creep, activated_repairers, toolbox, source_repairers);
-       	break;
-       case 'defender':
-       	roleDefender.run(creep, activated_defenders, toolbox, source_defenders);
-       	break;
-       case 'attacker':
-       	roleAttacker.run(creep);
-       	break;
-       case 'claimer':
-       	roleClaimer.run(creep, true, toolbox);
-       	break;
-       case 'filler':
-       	roleFiller.run(creep, activated_fillers, toolbox);
-       	break;
-       case 'explorer':
-       	roleExplorer.run(creep);
-       	break;
-       case 'ranger':
-       	roleRanger.run(creep, activated_rangers, toolbox);
-       	break
-       case 'healer':
-       	roleHealer.run(creep, activated_healers, toolbox);
-       	break
-       case 'beserker':
-       	roleBeserker.run(creep, activated_beserkers, toolbox);
-       	break
-    }
+for (let name in Game.creeps) {
+  let creep = Game.creeps[name];
+  switch (creep.memory.role) {
+case "harvester": {
+  const startCPU = Game.cpu.getUsed();
+  roleHarvester.run(creep, activated_harvesters, toolbox, source_harvesters);
+  const endCPU = Game.cpu.getUsed();
+  console.log(`CPU used for harvester: ${endCPU - startCPU}`);
+  break;
+}
+case "pioneer": {
+  const startCPU = Game.cpu.getUsed();
+  rolePioneer.run(creep, true, toolbox, source_pioneers);
+  const endCPU = Game.cpu.getUsed();
+  console.log(`CPU used for pioneer: ${endCPU - startCPU}`);
+  break;
+}
+case "hauler": {
+  const startCPU = Game.cpu.getUsed();
+  roleHauler.run(creep, activated_haulers, toolbox, source_haulers);
+  const endCPU = Game.cpu.getUsed();
+  console.log(`CPU used for hauler: ${endCPU - startCPU}`);
+  break;
+}
+case "harvester_external": {
+  const startCPU = Game.cpu.getUsed();
+  roleHarvesterExternal.run(creep, activated_harvesters);
+  const endCPU = Game.cpu.getUsed();
+  console.log(`CPU used for harvester_external: ${endCPU - startCPU}`);
+  break;
+}
+case "harvester_mineral": {
+  const startCPU = Game.cpu.getUsed();
+  roleHarvesterMineral.run(creep, activated_harvesters);
+  const endCPU = Game.cpu.getUsed();
+  console.log(`CPU used for harvester_mineral: ${endCPU - startCPU}`);
+  break;
+}
+case "upgrader": {
+  const startCPU = Game.cpu.getUsed();
+  roleUpgrader.run(creep, activated_upgraders, toolbox, source_upgraders);
+  const endCPU = Game.cpu.getUsed();
+  console.log(`CPU used for upgrader: ${endCPU - startCPU}`);
+  break;
+}
+case "builder": {
+  const startCPU = Game.cpu.getUsed();
+  roleBuilder.run(creep, activated_builders, toolbox, source_builders);
+  const endCPU = Game.cpu.getUsed();
+  console.log(`CPU used for builder: ${endCPU - startCPU}`);
+  break;
+}
+case "repairer": {
+  const startCPU = Game.cpu.getUsed();
+  roleRepairer.run(creep, activated_repairers, toolbox, source_repairers);
+  const endCPU = Game.cpu.getUsed();
+  console.log(`CPU used for repairer: ${endCPU - startCPU}`);
+  break;
+}
+case "defender": {
+  const startCPU = Game.cpu.getUsed();
+  roleDefender.run(creep, activated_defenders, toolbox, source_defenders);
+  const endCPU = Game.cpu.getUsed();
+  console.log(`CPU used for defender: ${endCPU - startCPU}`);
+  break;
+}
+case "attacker": {
+  const startCPU = Game.cpu.getUsed();
+  roleAttacker.run(creep);
+  const endCPU = Game.cpu.getUsed();
+  console.log(`CPU used for attacker: ${endCPU - startCPU}`);
+  break;
+}
+case "claimer": {
+  const startCPU = Game.cpu.getUsed();
+  roleClaimer.run(creep, true, toolbox);
+  const endCPU = Game.cpu.getUsed();
+  console.log(`CPU used for claimer: ${endCPU - startCPU}`);
+  break;
+}
+case "filler": {
+  const startCPU = Game.cpu.getUsed();
+  roleFiller.run(creep, activated_fillers, toolbox);
+  const endCPU = Game.cpu.getUsed();
+  console.log(`CPU used for filler: ${endCPU - startCPU}`);
+  break;
+}
+
+    case "explorer":
+      roleExplorer.run(creep);
+      break;
+    case "ranger":
+      roleRanger.run(creep, activated_rangers, toolbox);
+      break;
+    case "healer":
+      roleHealer.run(creep, activated_healers, toolbox);
+      break;
+    case "beserker":
+      roleBeserker.run(creep, activated_beserkers, toolbox);
+      break;
+    case "wallBuilder":
+      roleWallBuilder.run(creep, true, toolbox);
+      break;
+    case "mineralMiner":
+        roleMineralMiner.run(creep, true, toolbox);
+      break;
   }
+}
+
 
 
 for (const roomName in Game.rooms) {
@@ -386,26 +454,41 @@ const total_pioneers = _.filter(
     creep.memory.origin &&
     creep.memory.origin.name === room.name
 );
+const total_wallBuilder = _.filter(
+  Game.creeps,
+  (creep) =>
+    creep.memory.role === "wallBuilder" &&
+    creep.memory.origin &&
+    creep.memory.origin.name === room.name
+);
+const total_mineralMiner = _.filter(
+  Game.creeps,
+  (creep) =>
+    creep.memory.role === "mineralMiner" &&
+    creep.memory.origin &&
+    creep.memory.origin.name === room.name
+);
 var sites = room.find(FIND_CONSTRUCTION_SITES)
 
 
   // ╔═════════╗
   // ║ Loggers ║
   // ╚═════════╝
-  for (const name in Game.rooms) {
-    console.log(`╔════════════════════════════════════════════════`);
-    console.log(`║─┤Room "${name}"`);
-    console.log(`║─┤Total Energy: ${Game.rooms[name].energyAvailable}`);
-    console.log(
-      `║─┤Slots per Creep: ${Math.floor(Game.rooms[name].energyAvailable / 50)}`
-    );
-    console.log(`║─┤⛏️ Harvesters: ${total_harvesters.length}`);
-    console.log(`║─┤🔨 Builders: ${total_builders.length} `);
-    console.log(`║─┤🔺 Upgraders: ${total_upgraders.length}`);
-    console.log(`║─┤🔧 Repairers: ${total_repairers.length}`);
-    console.log(`║─┤� Haulers: ${total_haulers.length}`);
-    console.log(`╚════════════════════════════════════════════════`);
-  }
+if (Game.time % 10 === 0) {
+    for (const name in Game.rooms) {
+        const room = Game.rooms[name];
+        console.log(`╔════════════════════════════════════════════════`);
+        console.log(`║─┤Room "${name}"`);
+        console.log(`║─┤Total Energy: ${room.energyAvailable}`);
+        console.log(`║─┤Slots per Creep: ${Math.floor(room.energyAvailable / 50)}`);
+        console.log(`║─┤⛏️ Harvesters: ${total_harvesters.length}`);
+        console.log(`║─┤🔨 Builders: ${total_builders.length}`);
+        console.log(`║─┤🔺 Upgraders: ${total_upgraders.length}`);
+        console.log(`║─┤🔧 Repairers: ${total_repairers.length}`);
+        console.log(`║─┤🛒 Haulers: ${total_haulers.length}`);
+        console.log(`╚════════════════════════════════════════════════`);
+    }
+}
   defcon.run(room)
 
   // ╔════════════════╗
@@ -421,10 +504,21 @@ var sites = room.find(FIND_CONSTRUCTION_SITES)
   // ╔═════════════════╗
   // ║ Notify Spawning ║
   // ╚═════════════════╝
-  
+  //every 100 ticks for CPU efficiency
+if (Game.time % 100 === 0) {
+    Memory.spawns = {};
+    for (const spawnName in Game.spawns) {
+        Memory.spawns[spawnName] = {
+            name: spawnName,
+            pos: Game.spawns[spawnName].pos,
+            room: Game.spawns[spawnName].room.name
+        };
+    }
+}
+
 for (const spawnName in Memory.spawns) {
-    const spawn = Memory.spawns[spawnName];
-    if (spawn.spawning) {
+    const spawn = Game.spawns[spawnName];
+    if (spawn && spawn.spawning) {
         const spawningCreep = Game.creeps[spawn.spawning.name];
         const msg = `Spawning: ${spawningCreep.memory.role}`;
         spawn.room.visual.text(
@@ -435,120 +529,57 @@ for (const spawnName in Memory.spawns) {
         );
     }
 }
-
-  // ╔═══════════════════╗
-  // ║ Harvester Spawner ║
-  // ╚═══════════════════╝
-  if (total_harvesters.length < spawn_harvester) {
-    const newName = `Harvester${Game.time}`;
-    console.log(`Spawning new harvester: ${newName}`);
-    spawner.buildCreep('harvester', room);
-  }
-
-  // ╔══════════════════╗
-  // ║  Hauler Spawner  ║
-  // ╚══════════════════╝
-  else if (total_haulers.length < spawn_hauler) {
-    const newName = `Hauler${Game.time}`;
-    console.log(`Spawning new hauler: ${newName}`);
-    spawner.buildCreep('hauler', room);
-  }
-// ╔══════════════════╗
-// ║ TRIO Flag Logic  ║
-// ╚══════════════════╝
-if (1 < 0) {
-    if (total_rangers.length < spawn_ranger) {
-        const newName = `Ranger${Game.time}`;
-        console.log(`Spawning new ranger: ${newName}`);
-        spawner.buildCreep('ranger', room);
-    } else if (total_healers.length < spawn_healer) {
-        const newName = `Healer${Game.time}`;
-        console.log(`Spawning new healer: ${newName}`);
-        spawner.buildCreep('healer', room);
-    } else if (total_beserkers.length < spawn_beserker) {
-        const newName = `Beserker${Game.time}`;
-        console.log(`Spawning new beserker: ${newName}`);
-        spawner.buildCreep('beserker', room);
-    }
-}
-if(Game.flags.claimRoom) {
-    if(total_claimers.length < 1) {
-        spawner.buildCreep('claimer', room);
-    }
-}
-if(Game.flags.supportRoom) {
-    if(total_pioneers.length < 3) {
-        spawner.buildCreep('pioneer', room)
-    }
-}
-    
-var defconLevel = Number(
-    Memory.defcon &&
-    Memory.defcon[room.name] &&
-    Memory.defcon[room.name].defcon
-);
-
-if (defconLevel >= 1) {
-
-    if(defconLevel == 1) {
-         var spawn_defender = 1;
-    } else if(defconLevel == 2) {
-         var spawn_defender = 2;
-    } else if(defconLevel == 3) {
-         var spawn_defender = 4;
-    } else if(defconLevel == 4) {
-         var spawn_defender = 6;
-    }
-
-    if (!Array.isArray(total_defenders)) {
-    } else {
-
-        if (total_defenders.length < spawn_defender) {
-            console.log(`🚨 Spawning a new defender in room ${room.name}`);
-                spawner.buildCreep('defender', room);
-        }
-    }
-}
-
-  // ╔═════════════════╗
-  // ║ Builder Spawner ║
-  // ╚═════════════════╝
-  else if (total_builders.length < spawn_builder && sites.length) {
-    const newName = `Builder${Game.time}`;
-    console.log(`Spawning new builder: ${newName}`);
-    spawner.buildCreep('builder', room);
-  }
-
-  // ╔══════════════════╗
-  // ║ Upgrader Spawner ║
-  // ╚══════════════════╝
-  else if (total_upgraders.length < spawn_upgrader) {
-    const newName = `Upgrader${Game.time}`;
-    console.log(`Spawning new upgrader: ${newName}`);
-    spawner.buildCreep('upgrader', room);
-  } 
-  
-  // ╔══════════════════╗
-  // ║ Repairer Spawner ║
-  // ╚══════════════════╝
-  else if (total_repairers.length < spawn_repair) {
-  const newName = `Repairer${Game.time}`;
-  console.log(`Spawning new repairer: ${newName}`);
+// ╔════════════════════════════════╗
+// ║ Priority-Based Creep Spawning ║
+// ╚════════════════════════════════╝
+if (total_harvesters.length < spawn_harvester) {
+  spawner.buildCreep('harvester', room);
+} else if (total_haulers.length < spawn_hauler) {
+  spawner.buildCreep('hauler', room);
+} else if (total_wallBuilder.length < 1) {
+  spawner.buildCreep('wallBuilder', room);
+} else if (total_builders.length < spawn_builder && sites.length) {
+  spawner.buildCreep('builder', room);
+} else if (total_upgraders.length < spawn_upgrader) {
+  spawner.buildCreep('upgrader', room);
+} else if (total_repairers.length < spawn_repair) {
   spawner.buildCreep('repairer', room);
-} 
-  // ╔══════════════════╗
-  // ║  Filler Spawner  ║
-  // ╚══════════════════╝
+} else if (room.controller.level >= 4 && room.storage && total_filler.length < 1) {
+  spawner.buildCreep('filler', room);
+}
 
-else if(room.controller.level >= 4 && room.storage) {
-      const spawn_filler = 1;
-      if(total_filler.length < spawn_filler) {
-        const newName = `Filler${Game.time}`;
-        console.log(`Spawning new filler: ${newName}`);
-        spawner.buildCreep('filler', room);
-      }
-      
+// ╔════════════════════════════════╗
+// ║ Conditional Spawning (Flags)  ║
+// ╚════════════════════════════════╝
+if (Game.flags.claimRoom && total_claimers.length < 1) {
+  spawner.buildCreep('claimer', room);
+}
+
+if (Game.flags.supportRoom && total_pioneers.length < 2) {
+  spawner.buildCreep('pioneer', room);
+}
+
+// ╔════════════════════════════════╗
+// ║ DEFCON-Based Defender Spawning ║
+// ╚════════════════════════════════╝
+var defconLevel = Number(Memory.defcon && Memory.defcon[room.name] && Memory.defcon[room.name].defcon);
+if (defconLevel >= 1) {
+  let spawn_defender = [0, 1, 2, 4, 6][defconLevel] || 0;
+  if (total_defenders.length < spawn_defender) {
+    spawner.buildCreep('defender', room);
   }
+}
+
+// ╔════════════════════════════════╗
+// ║ Mineral Miner (Low Priority)  ║
+// ╚════════════════════════════════╝
+if (
+  room.controller.level >= 6 &&
+  room.find(FIND_STRUCTURES, { filter: s => s.structureType === STRUCTURE_EXTRACTOR }).length > 0 &&
+  total_mineralMiner.length < 1
+) {
+  spawner.buildCreep('mineralMiner', room);
+}
   // ╔══════════════════╗
   // ║ Tower Management ║
   // ╚══════════════════╝
@@ -636,27 +667,26 @@ function drawRoomVisual(room) {
             font: '0.9 Trebuchet MS'
         });
     };
+let line = 0;
+print(`🧠 Room HUD`, line++);
+print(`🏷 ${room.name}`, line++);
+print(`⚡ ${energy}/${maxEnergy} E`, line++);
 
-    let line = 0;
-    print(`🧠 Room HUD`, line++);
-    print(`🏷 ${room.name}`, line++);
-    print(`⚡ ${energy}/${maxEnergy} E`, line++);
+print(`🏛 RCL ${controller.level}`, line++);
+const progressPercent = ((controller.progress / controller.progressTotal) * 100).toFixed(1);
+print(`📈 ${progressPercent}% to RCL ${controller.level + 1}`, line++);
+print(`⌛ Downgrade: ${controller.ticksToDowngrade}`, line++);
 
-    print(`🏛 RCL ${controller.level}`, line++);
-    const progressPercent = ((controller.progress / controller.progressTotal) * 100).toFixed(1);
-    print(`📈 ${progressPercent}% to RCL ${controller.level + 1}`, line++);
-    print(`⌛ Downgrade: ${controller.ticksToDowngrade}`, line++);
-
-    print(`👥 Creeps (cur/des):`, line++);
-    for (const role in desiredCounts) {
-        const current = currentCounts[role] || 0;
-        const desired = desiredCounts[role];
-        const text = `• ${role.padEnd(9)} ${current}/${desired}`;
-        const color = current < desired ? '#ffaa00' : '#ffffff';
-        print(text, line++, color);
-    }
+print(`👥 Creeps (cur/des):`, line++);
+for (const role in desiredCounts) {
+    const current = currentCounts[role] || 0;
+    const desired = desiredCounts[role];
+    const text = `• ${role.padEnd(9)} ${current}/${desired}`;
+    const color = current < desired ? '#ffaa00' : '#ffffff';
+    print(text, line++, color);
+}
 
     if (hostileCreeps.length > 0) {
-        print(`🚨 Hostiles: ${hostileCreeps.length}`, line++, '#ff5555');
+        print(`🚨 Hostiles: ${hostileCreeps.length}, line++, '#ff5555'`);
     }
 }
