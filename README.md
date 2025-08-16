@@ -8,17 +8,19 @@ My profile is here: [**TXR**](https://screeps.com/a/#!/profile/_TXR)
 
 ---
 
-### Current Version - 0.80:  
-- Room Memory usage to save CPU
-- Bashed my CPU from 10-12 to 7-9 (6 on a good day)
-- Changed some roles
+### Current Version - 0.90:  
+- Mineral Mining and Market management
+- Lowered CPU usage alot (again)
+- New roles (mineral miner and WIP lab technician)
 
 
   
-### Next Version - 0.90:  
-- Better repairers (maybe a centralised repair manager)
-- Better defcon system (its terrible)
-- Lab and market auto managing (for boost and credit making)
+### Next Version - 1.0:  !!!
+- Boost making and lab technicians
+- Upgrader boosting and general creep boosting for efficiency
+- Smarter market manager
+- (if threat appears) Boosted atackers
+
 
 
 ---
