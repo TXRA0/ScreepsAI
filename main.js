@@ -179,10 +179,10 @@ if (room && room.controller && room.controller.my) {
         Memory.rooms[roomName] = {};
         }
     }
-//if (Game.time % 10 === 0) {
+if (Game.time % 6 === 0) {
     require('marketManager').run();
- //   console.log(`[marketManager] Tick ${Game.time}: run() triggered`);
-//}
+    // console.log(`[marketManager] Tick ${Game.time}: run() triggered`);
+}
 const pairedMessages = [
   ["hey", "yo"],
   ["back off", "try me"],

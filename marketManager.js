@@ -1,5 +1,5 @@
 const marketManager = {
-    sellHighest: function(roomName, resourceType) {
+    sellHighest: function(roomName, resourceType, cachedOrders) {
         const room = Game.rooms[roomName];
         if (!room || !room.terminal) return;
 
@@ -7,16 +7,8 @@ const marketManager = {
         const amountToSell = terminal.store[resourceType];
         if (!amountToSell) return;
 
-        const orders = Game.market.getAllOrders(function(order) {
-            return order.type === ORDER_BUY &&
-                   order.resourceType === resourceType &&
-                   order.remainingAmount > 0;
-        });
-
-        if (!orders.length) {
-            console.log(`[marketManager] ${roomName}: No BUY orders for ${resourceType}`);
-            return;
-        }
+        const orders = cachedOrders[resourceType];
+        if (!orders || !orders.length) return;
 
         let bestOrder = orders[0];
         for (let i = 1; i < orders.length; i++) {
@@ -26,11 +18,10 @@ const marketManager = {
         }
 
         const amount = Math.min(bestOrder.remainingAmount, amountToSell);
-        const result = Game.market.deal(bestOrder.id, amount, roomName);
-        console.log(`[marketManager] ${roomName}: Sold ${amount} ${resourceType} @ ${bestOrder.price} → Order ${bestOrder.id} | Result: ${result}`);
+        Game.market.deal(bestOrder.id, amount, roomName);
     },
 
-    buyLowest: function(roomName, resourceType, targetAmount = 1000) {
+    buyLowest: function(roomName, resourceType, targetAmount, cachedOrders) {
         const room = Game.rooms[roomName];
         if (!room || !room.terminal) return;
 
@@ -38,16 +29,8 @@ const marketManager = {
         const currentAmount = terminal.store[resourceType] || 0;
         if (currentAmount >= targetAmount) return;
 
-        const orders = Game.market.getAllOrders(function(order) {
-            return order.type === ORDER_SELL &&
-                   order.resourceType === resourceType &&
-                   order.remainingAmount > 0;
-        });
-
-        if (!orders.length) {
-            console.log(`[marketManager] ${roomName}: No SELL orders for ${resourceType}`);
-            return;
-        }
+        const orders = cachedOrders[resourceType];
+        if (!orders || !orders.length) return;
 
         let bestOrder = orders[0];
         for (let i = 1; i < orders.length; i++) {
@@ -57,48 +40,50 @@ const marketManager = {
         }
 
         const amount = Math.min(bestOrder.remainingAmount, targetAmount - currentAmount);
-        const result = Game.market.deal(bestOrder.id, amount, roomName);
-        console.log(`[marketManager] ${roomName}: Bought ${amount} ${resourceType} @ ${bestOrder.price} ← Order ${bestOrder.id} | Result: ${result}`);
+        Game.market.deal(bestOrder.id, amount, roomName);
     },
 
-run: function() {
-    for (const name in Game.rooms) {
-        const room = Game.rooms[name];
-        console.log(`[marketManager] Tick ${Game.time}: Checking room ${room.name}`);
+    run: function() {
+        const MINERAL_TYPES = ['H', 'O', 'U', 'L', 'K', 'Z', 'X', 'G', 'GH', 'GO'];
+        const cachedBuyOrders = {};
+        const cachedSellOrders = {};
 
-        if (!room.terminal) {
-            console.log(`[marketManager] ${room.name} has no terminal`);
-            continue;
+        for (const mineral of MINERAL_TYPES) {
+            cachedBuyOrders[mineral] = Game.market.getAllOrders(o =>
+                o.type === ORDER_BUY && o.resourceType === mineral && o.remainingAmount > 0
+            );
+            cachedSellOrders[mineral] = Game.market.getAllOrders(o =>
+                o.type === ORDER_SELL && o.resourceType === mineral && o.remainingAmount > 0
+            );
         }
 
-        const minerals = room.find(FIND_MINERALS);
-        if (minerals.length === 0) {
-            console.log(`[marketManager] ${room.name} has no minerals`);
-            continue;
-        }
+        for (const name in Game.rooms) {
+            const room = Game.rooms[name];
+            if (!room.terminal || room.terminal.store.getFreeCapacity() < 500) continue;
 
-        const nativeMineral = minerals[0].mineralType;
-        const nativeAmount = room.terminal.store[nativeMineral] || 0;
-        console.log(`[marketManager] ${room.name} has ${nativeAmount} ${nativeMineral} in terminal`);
+            const minerals = room.find(FIND_MINERALS);
+            if (minerals.length === 0) continue;
 
-        if (nativeAmount > 0) {
-            marketManager.sellHighest(room.name, nativeMineral);
-        }
+            const nativeMineral = minerals[0].mineralType;
+            const nativeAmount = room.terminal.store[nativeMineral] || 0;
 
-        for (const mineralType in RESOURCES_ALL) {
-            if (!RESOURCES_ALL.includes(mineralType)) continue; 
-            if (mineralType === nativeMineral) continue; 
-
-            const amount = room.terminal.store[mineralType] || 0;
-            if (amount < 1000) {
-                console.log(`[marketManager] ${room.name} wants ${mineralType}, has ${amount}`);
-                marketManager.buyLowest(room.name, mineralType, 1000 - amount);
+            if (nativeAmount > 0) {
+                marketManager.sellHighest(room.name, nativeMineral, cachedBuyOrders);
             }
-        }
 
-        break; 
+            for (const mineralType of MINERAL_TYPES) {
+                if (mineralType === nativeMineral) continue;
+
+                const amount = room.terminal.store[mineralType] || 0;
+               
+                if (amount < 1000 && Game.market.credits > 2000000) {
+                    marketManager.buyLowest(room.name, mineralType, 1000, cachedSellOrders);
+                }
+            }
+
+            break;
+        }
     }
-}
 };
 
 module.exports = marketManager;
