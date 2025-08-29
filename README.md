@@ -8,18 +8,17 @@ My profile is here: [**TXR**](https://screeps.com/a/#!/profile/_TXR)
 
 ---
 
-### Current Version - 0.90:  
-- Mineral Mining and Market management
-- Lowered CPU usage alot (again)
-- New roles (mineral miner and WIP lab technician)
+### Current Version - 0.91: All good things come to an end:
+- Lack of good defense/defcon code resulted in my death
+- Attacked by boosted 50 part creeps ...
 
 
   
-### Next Version - 1.0:  !!!
+~ ### Next Version - 1.0:  !!!
 - Boost making and lab technicians
 - Upgrader boosting and general creep boosting for efficiency
 - Smarter market manager
-- (if threat appears) Boosted atackers
+- (if threat appears) Boosted atackers ~
 
 
 
