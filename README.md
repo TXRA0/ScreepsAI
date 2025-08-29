@@ -14,11 +14,11 @@ My profile is here: [**TXR**](https://screeps.com/a/#!/profile/_TXR)
 
 
   
-~ ### Next Version - 1.0:  !!!
-- Boost making and lab technicians
-- Upgrader boosting and general creep boosting for efficiency
-- Smarter market manager
-- (if threat appears) Boosted atackers ~
+### ~~Next Version - 1.0: !!!~~  
+- ~~Boost making and lab technicians~~  
+- ~~Upgrader boosting and general creep boosting for efficiency~~  
+- ~~Smarter market manager~~  
+- ~~(if threat appears) Boosted attackers~~  
 
 
 
